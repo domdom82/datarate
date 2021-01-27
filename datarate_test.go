@@ -1,18 +1,20 @@
 package datarate
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestParse(t *testing.T) {
 
 	table := map[string]bool{
-		"10kb/s":    true,
-		"3mb/s":     true,
+		"10KB/s":    true,
+		"10kb/s":    false,
+		"3MB/s":     true,
 		"kb/s":      false,
 		"bad":       false,
 		"123 mb//s": false,
-		"1.5M/h":    true,
+		"1.5MB/h":   true,
 	}
 
 	for k, v := range table {
@@ -24,5 +26,21 @@ func TestParse(t *testing.T) {
 			t.Errorf("expected %s to throw error but got: %v", k, rate)
 		}
 	}
+
+}
+
+func TestValues(t *testing.T) {
+
+	oneMegabytePerSecond, err := Parse("1MB/s")
+	assert.NoError(t, err)
+	assert.Equal(t, 1e6, oneMegabytePerSecond.BytesPerSecond())
+
+	oneGigabytePerHour, err := Parse("1GB/h")
+	assert.NoError(t, err)
+	assert.LessOrEqual(t, 277777.7, oneGigabytePerHour.BytesPerSecond())
+
+	tenBytesPerSecond, err := Parse("10B/s")
+	assert.NoError(t, err)
+	assert.Equal(t, 10.0, tenBytesPerSecond.BytesPerSecond())
 
 }
